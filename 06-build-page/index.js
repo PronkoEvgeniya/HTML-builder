@@ -26,7 +26,8 @@ async function bundleCss() {
 }
 
 
-async function copyAssets(fromAssets, toAssets) {    
+    
+async function copyAssets(fromAssets, toAssets) {   
     const filesAssets = await fsPromises.readdir(fromAssets, {withFileTypes: true});
     for (const file of filesAssets) {
         const from = path.join(fromAssets, file.name);
@@ -50,17 +51,16 @@ async function createFile() {
     }
     await fsPromises.writeFile(htmlFile, newTemplate);
 }
-async function bundle() {
-    fs.access(pathDir, (error) => {
-          if (error) {
-            fsPromises.mkdir(pathDir);
-          }
-        });
+(async function bundle() {
+    try {
+    await fsPromises.rm(pathDir, { force: true, recursive: true });
+    
+    await fsPromises.mkdir(pathDir, { recursive: true });
     createFile();
     bundleCss();
-    await fsPromises.rm(newAssets, { force: true, recursive: true });
     await fsPromises.mkdir(newAssets, { recursive: true });
-
-    copyAssets(assets, newAssets)
-}
-bundle()
+    copyAssets(assets, newAssets) 
+    } catch (error) {
+        bundle()
+    }
+})()
